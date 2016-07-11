@@ -168,7 +168,7 @@ filter  _ Nil = Nil
   List a
   -> List a
   -> List a
-(++) as as' = foldRight (:.) as' as
+(++) = flip $ foldRight (:.)
 
 infixr 5 ++
 
@@ -329,7 +329,7 @@ produce f a = a :. produce f (f a)
 notReverse ::
   List a
   -> List a
-notReverse = error "impossible"
+notReverse = reverse -- impossible
 
 ---- End of list exercises
 
