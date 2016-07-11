@@ -61,8 +61,8 @@ the contents of c
 -- /Tip:/ use @getArgs@ and @run@
 main ::
   IO ()
-main =
-  error "todo: Course.FileIO#main"
+main = getArgs >>= run . (headOr (error "insuffient args"))
+
 
 type FilePath =
   Chars
@@ -71,31 +71,31 @@ type FilePath =
 run ::
   Chars
   -> IO ()
-run =
-  error "todo: Course.FileIO#run"
+run path = do
+  contents <- readFile path
+  void $ (printFiles <=< getFiles) (lines contents)
 
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
-getFiles =
-  error "todo: Course.FileIO#getFiles"
+getFiles = sequence . (map getFile)
 
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
-getFile =
-  error "todo: Course.FileIO#getFile"
+getFile path = (readFile path) >>= \contents -> pure (path, contents)
 
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
-printFiles =
-  error "todo: Course.FileIO#printFiles"
+printFiles = void . sequence . map (uncurry printFile)
 
 printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
-
+printFile path contents =
+  void $ sequence $ printName :. printLines
+  where
+    printName = putStrLn $ path ++ ":"
+    printLines = map putStrLn (lines contents)
