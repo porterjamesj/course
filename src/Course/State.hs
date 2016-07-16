@@ -65,10 +65,15 @@ instance Applicative (State s) where
     State s (a -> b)
     -> State s a
     -> State s b
+-- the State we return is a function that takes a state (s). it runs f
+-- on s to get another function (f' :: a->b ) and a new state (s'). it
+-- then runs g on s' to get an a, and another new state (s'') we then
+-- call f' on a to get a b, and return the tuple
   (<*>) (State f) (State g) = State $ \s ->
     let (f', s') = (f s)
         (a, s'') = (g s')
     in (f' a, s'')
+
 
 
 -- | Implement the `Bind` instance for `State s`.
@@ -83,6 +88,9 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
+-- the return State takes a state (s), calls g on it to get an a and a
+-- new state (s'). we then call f on a to get a (State s b), and run
+-- this state, passing it s'
   f =<< (State g) = State $ \s ->
     let (a, s') = (g s)
     in runState (f a) s'
@@ -121,7 +129,7 @@ get = State $ \s -> (s,s)
 put ::
   s
   -> State s ()
-put s = State $ \_ -> ((), s)
+put s = State $ const ((), s)
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
@@ -137,15 +145,27 @@ put s = State $ \_ -> ((), s)
 --
 -- >>> let p x = (\s -> (const $ pure (x == 'i')) =<< put (1+s)) =<< get in runState (findM p $ listh ['a'..'h']) 0
 -- (Empty,8)
+--
+-- writing the above examples with do notation makes it clearer:
+-- let p x = do {s <- get; put (s+1); pure (x == 'c')} in runState (findM p $ listh ['a'..'h']) 0
+-- let p x = do {s <- get; put (s+1); pure (x == 'i')} in runState (findM p $ listh ['a'..'h']) 0
+-- both of these work the same as above
 findM ::
   Monad f =>
   (a -> f Bool)
   -> List a
   -> f (Optional a)
 findM _ Nil = pure Empty
-findM p (a :. as) = do
-  b <- p a
-  if b then pure (Full a) else findM p as
+findM p (a :. as) =
+  p a >>=
+  \b -> if b then pure (Full a) else findM p as
+
+seen :: Ord a => a -> State (S.Set a) Bool
+seen a = do
+  s <- get
+  put (S.insert a s)
+  pure (S.member a s)
+
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -158,8 +178,7 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo: Course.State#firstRepeat"
+firstRepeat as = eval (findM seen as) S.empty
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -171,8 +190,7 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct =
-  error "todo: Course.State#distinct"
+distinct as = eval (filtering (((<$>) not) . seen) as) S.empty
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
