@@ -192,6 +192,10 @@ distinct ::
   -> List a
 distinct as = eval (filtering (((<$>) not) . seen) as) S.empty
 
+square :: Num a => a -> a
+square = join (*)
+-- whaaaaaaaat
+
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
 -- because it results in a recurring sequence.
