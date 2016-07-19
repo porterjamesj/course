@@ -31,10 +31,6 @@ newtype State s a =
       -> (a, s)
   }
 
-mapFirst :: (a -> b) -> (a, c) -> (b, c)
-mapFirst f (a, c) = (f a, c)
-
-
 -- | Implement the `Functor` instance for `State s`.
 -- >>> runState ((+1) <$> pure 0) 0
 -- (1,0)
@@ -43,7 +39,7 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  f <$> (State g) = State $ (mapFirst f) . g
+  f <$> (State g) = State $ (first f) . g
 
 -- | Implement the `Applicative` instance for `State s`.
 --
