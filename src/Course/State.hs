@@ -220,5 +220,6 @@ square = join (*)
 isHappy ::
   Integer
   -> Bool
-isHappy =
-  error "todo: Course.State#isHappy"
+isHappy = (contains 1) . firstRepeat . (produce sumAndSquareDigits)
+  where sumAndSquareDigits = toInteger . sum . (map square) . digits
+        digits = (map digitToInt) . show'
