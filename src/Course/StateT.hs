@@ -60,6 +60,8 @@ instance Functor f => Functor (StateT s f) where
 --
 -- >>> runStateT (StateT (\s -> ((+2), s P.++ [1]) :. ((+3), s P.++ [1]) :. Nil) <*> (StateT (\s -> (2, s P.++ [2]) :. Nil))) [0]
 -- [(4,[0,1,2]),(5,[0,1,2])]
+  -- N.B. I am still not quite sure why `Applicative f =>`
+  -- is insufficient here
 instance Monad f => Applicative (StateT s f) where
   pure ::
     a
@@ -69,7 +71,11 @@ instance Monad f => Applicative (StateT s f) where
    StateT s f (a -> b)
     -> StateT s f a
     -> StateT s f b
-  (<*>) = error "hmmmm"
+  (StateT fab) <*> (StateT fa) = StateT $ \s -> do
+    (ab, s') <- (fab s)
+    (a, s'') <- (fa s')
+    pure (ab a, s'')
+
 
 -- | Implement the `Monad` instance for @StateT s f@ given a @Monad f@.
 -- Make sure the state value is passed through in `bind`.
