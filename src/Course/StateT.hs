@@ -304,7 +304,9 @@ distinctG ::
   -> Logger Chars (Optional (List a))
 distinctG = runOptionalT . (flip evalT) S.empty . filtering run
   where
-    logIfEven n = if even n then listh ["even number: " ++ (listh . show) n] else Nil
-    run n = StateT $ \s -> OptionalT $ if n > 100
-                                       then log1 ("aborting n > 100" ++ (listh . show) n) Empty
-                                       else Logger (logIfEven n) (Full (not $ S.member n s, S.insert n s))
+    ourShow = listh . show
+    logIfEven n = if even n then listh ["even number: " ++ ourShow n] else Nil
+    run n = StateT $ \s -> OptionalT $
+                             if n > 100
+                             then log1 ("aborting n > 100" ++ ourShow n) Empty
+                             else Logger (logIfEven n) (Full (not $ S.member n s, S.insert n s))
