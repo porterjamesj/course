@@ -541,6 +541,7 @@ index (ListZipper l _ _) = length l
 end ::
   ListZipper a
   -> ListZipper a
+end lz@(ListZipper _ _ Nil) = lz
 end (ListZipper l f r) = ListZipper
   (rest ++ (f:.Nil) ++ l) head Nil
   where
