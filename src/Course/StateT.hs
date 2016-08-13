@@ -60,8 +60,9 @@ instance Functor f => Functor (StateT s f) where
 --
 -- >>> runStateT (StateT (\s -> ((+2), s P.++ [1]) :. ((+3), s P.++ [1]) :. Nil) <*> (StateT (\s -> (2, s P.++ [2]) :. Nil))) [0]
 -- [(4,[0,1,2]),(5,[0,1,2])]
-  -- N.B. I am still not quite sure why `Applicative f =>`
-  -- is insufficient here
+
+-- N.B. I am still not quite sure why `Applicative f =>`
+-- is insufficient here
 instance Monad f => Applicative (StateT s f) where
   pure ::
     a
@@ -308,5 +309,5 @@ distinctG = runOptionalT . (flip evalT) S.empty . filtering run
     logIfEven n = if even n then listh ["even number: " ++ ourShow n] else Nil
     run n = StateT $ \s -> OptionalT $
                              if n > 100
-                             then log1 ("aborting n > 100" ++ ourShow n) Empty
+                             then log1 ("aborting > 100: " ++ ourShow n) Empty
                              else Logger (logIfEven n) (Full (not $ S.member n s, S.insert n s))
